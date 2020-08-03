@@ -18,7 +18,8 @@ Future-future Feature Goals:
 - Rear range finding sensor or IR distance sensor with vibration to give a "sixth sense" of other riders in your blind spot.
 - Solar panels for self-recharging.
 
-![](./prototype.png | width=200)
+Prototype render:
+![](./prototype.png)
 
 ## Compatible Helmets
 
