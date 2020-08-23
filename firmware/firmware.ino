@@ -11,7 +11,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <Adafruit_LIS3MDL.h> // Magnetometer
 #include <Arduino_LSM6DS3.h> // Accelerometer and gyroscope
-#include <Adafruit_Sensor_Calibration.h>
+// #include <Adafruit_Sensor_Calibration.h>
 
 #define NEOPIXEL_NUM 3
 #define SERVO_SHIELD_PIN 0
@@ -21,8 +21,8 @@
 #define SERVOMAX  800 // this is the 'maximum' pulse length count (out of 4096)
 
 // Sensor calibration
-#define FILE_SENSOR_CALIB "sensor_calib.json"
-Adafruit_Sensor_Calibration_SDFat cal;
+// #define FILE_SENSOR_CALIB "sensor_calib.json"
+// Adafruit_Sensor_Calibration_SDFat cal;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_NUM, PIN_NEOPIXEL, NEO_GRB + NEO_KHZ800);
@@ -35,6 +35,9 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);   // for nrf52840 with native usb
 
+  Serial.print("Accelerometer sample rate: ");
+  Serial.print(IMU.accelerationSampleRate());
+
   /* Servo motor */
   pwm.begin();
   pwm.setPWMFreq(60);
@@ -42,9 +45,6 @@ void setup() {
   strip.begin();
   strip.setPixelColor(0, strip.Color(5, 5, 5, 10));
   strip.show();
-
-  Serial.print("Accelerometer sample rate = ");
-  Serial.print(IMU.accelerationSampleRate());
 
   flipUp();
 }
@@ -57,7 +57,7 @@ void loop() {
   }
 
   float ax, ay, az, gx, gy, gz;
-  bool gyroYSteady = gy > -0.05 && gy < 0.05;
+  bool gySteady = true; // gy > -0.07 && gy < 0.07;
 
   if (IMU.accelerationAvailable()) {
     IMU.readAcceleration(ax, ay, az);
@@ -70,6 +70,8 @@ void loop() {
     Serial.println(az);
   } else {
     Serial.println("Error witH IMU.");
+
+    ax = 0.5; // Temp workaround for IMU flipping out
   }
 
   if (IMU.gyroscopeAvailable()) {
@@ -83,7 +85,7 @@ void loop() {
     Serial.println(gz);
   }
 
- if (ax > 0.5) {
+ if (ax > 0.5 && gySteady) {
    strip.setPixelColor(0, strip.Color(0, 15, 0));
    strip.show();
 
@@ -92,7 +94,7 @@ void loop() {
    delay(10);
  }
 
- if (ax < 0.5) {
+ if (ax < 0.5 && gySteady) {
    strip.setPixelColor(0, strip.Color(15, 0, 0));
    strip.show();
 
