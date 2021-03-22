@@ -16,6 +16,7 @@
 #define NEOPIXEL_NUM 3
 #define SERVO_SHIELD_PIN 0
 #define NUM_PIXELS 0
+#define BRIGHTNESS 10
 
 #define SERVOMIN  250 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  800 // this is the 'maximum' pulse length count (out of 4096)
@@ -35,21 +36,32 @@ void setup() {
   Serial.begin(115200);
   while (!Serial) delay(10);   // for nrf52840 with native usb
 
-  Serial.print("Accelerometer sample rate: ");
+  if (!IMU.begin()) {
+    Serial.println("Failed to initialize IMU!");
+
+    while (1);
+  }
+
+  Serial.print("Accelerometer sample rate = ");
   Serial.print(IMU.accelerationSampleRate());
+  Serial.println(" Hz");
+  Serial.println();
+  Serial.println("Acceleration in G's");
+  Serial.println("X\tY\tZ");
 
   /* Servo motor */
   pwm.begin();
   pwm.setPWMFreq(60);
 
   strip.begin();
-  strip.setPixelColor(0, strip.Color(5, 5, 5, 10));
+  strip.setPixelColor(0, strip.Color(255, 5, 5, BRIGHTNESS));
   strip.show();
 
   flipUp();
 }
 
 void loop() {
+  delay(10);
   const int position = pwm.getPWM(SERVO_SHIELD_PIN);
 
   if (position != 0) {
@@ -58,6 +70,10 @@ void loop() {
 
   float ax, ay, az, gx, gy, gz;
   bool gySteady = true; // gy > -0.07 && gy < 0.07;
+
+  // TODO implement "psuedo gesture" to control visor
+  // IF head tilting down + accelerating forward THEN move visor down
+  // IF head tilting up + accelerating backward THEN move visor up
 
   if (IMU.accelerationAvailable()) {
     IMU.readAcceleration(ax, ay, az);
@@ -69,7 +85,7 @@ void loop() {
     Serial.print('\t');
     Serial.println(az);
   } else {
-    Serial.println("Error witH IMU.");
+    Serial.println("Error witH IMU accelerometer.");
 
     ax = 0.5; // Temp workaround for IMU flipping out
   }
@@ -83,10 +99,12 @@ void loop() {
     Serial.print(gy);
     Serial.print('\t');
     Serial.println(gz);
+  } else {
+    Serial.println("Error witH IMU gyroscope.");
   }
 
  if (ax > 0.5 && gySteady) {
-   strip.setPixelColor(0, strip.Color(0, 15, 0));
+   strip.setPixelColor(0, strip.Color(0, 15, 0, BRIGHTNESS));
    strip.show();
 
    flipDown();
@@ -95,7 +113,7 @@ void loop() {
  }
 
  if (ax < 0.5 && gySteady) {
-   strip.setPixelColor(0, strip.Color(15, 0, 0));
+   strip.setPixelColor(0, strip.Color(15, 0, 0, BRIGHTNESS));
    strip.show();
 
    flipUp();

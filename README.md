@@ -24,3 +24,7 @@ Prototype render:
 ## Compatible Helmets
 
 [Nutcase 2020 Street Collection with MIPS](https://nutcasehelmets.com/collections/adult/products/sun-day-solid-gloss-w-mips)
+
+## Hardware
+
+[Adafruit Feather Sense](https://learn.adafruit.com/adafruit-feather-sense)
